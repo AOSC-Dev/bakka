@@ -7,19 +7,18 @@ mod index;
 #[derive(Parser, Debug)]
 #[clap(about, version, author)]
 struct Args {
-    /// Switch to this package directory
     #[clap(subcommand)]
     subcommand: Command,
 }
 
 #[derive(Subcommand, Debug)]
 enum Command {
+    /// Switch to this package directory
     Cd(CdSubCommand),
 }
 
 #[derive(Parser, Debug)]
 struct CdSubCommand {
-    /// cd package directory
     #[clap()]
     package: String,
 }
