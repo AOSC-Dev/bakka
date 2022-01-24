@@ -5,6 +5,8 @@ function bakka {
     	cd "$(command bakka cd ${2})"
     elif [[ $1 == "--jump" && $2 != "--help" && $2 != "-h" ]]; then
         cd "$(command bakka jump ${2})"
+    elif [[ $1 != -* ]]; then
+        cd "$(command bakka $@)"
     else
         command bakka $@
     fi
