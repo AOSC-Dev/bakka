@@ -22,8 +22,8 @@ fn gen_abbs_index(tree: &Path) -> Result<Vec<(String, String)>> {
             }
         }
     }
-    let index_str = serde_json::to_string(&result).unwrap();
-    std::fs::write(INDEX_PATH, index_str).unwrap();
+    let index_str = serde_json::to_string(&result)?;
+    std::fs::write(INDEX_PATH, index_str)?;
 
     Ok(result)
 }
