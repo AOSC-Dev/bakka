@@ -15,6 +15,8 @@ struct Args {
 enum Command {
     /// Switch to this package directory
     Cd(CdSubCommand),
+    /// Switch to thic package directory (no match mode)
+    Jump(CdSubCommand),
 }
 
 #[derive(Parser, Debug)]
@@ -43,6 +45,19 @@ fn main() {
                     .display()
             );
         }
+        Command::Jump(CdSubCommand { package }) => {
+            let count = index.iter().position(|(x, _)| x == &package);
+            match count {
+                Some(count) => println!(
+                    "{}",
+                    abbs_tree_path.join(index[count].1.to_owned()).display()
+                ),
+                None => {
+                    eprintln!("Cannot find package: {}", package);
+                    std::process::exit(1);
+                }
+            }
+        }
     }
 }
 
@@ -56,8 +71,8 @@ fn get_package_directory(index: Vec<(String, String)>, package: String) -> Strin
     }
     sorted_correlation_list.sort_by(|(_, _, a), (_, _, b)| b.partial_cmp(a).unwrap());
     let mut correlation_name_list = Vec::new();
-    for i in 0..10 {
-        correlation_name_list.push(sorted_correlation_list[i].0.to_owned());
+    for (name, _, _) in sorted_correlation_list.iter().take(10) {
+        correlation_name_list.push(name);
     }
     let selected_package_index: usize = if correlation_name_list.len() == 1 {
         0

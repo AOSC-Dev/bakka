@@ -7,19 +7,22 @@ const INDEX_PATH: &str = "./.index";
 fn gen_abbs_index(tree: &Path) -> Result<Vec<(String, String)>> {
     let mut result = Vec::new();
     std::env::set_current_dir(tree)?;
-    for entry in WalkDir::new(".").max_depth(2).min_depth(2).into_iter() {
-        if let Ok(entry) = entry {
-            if entry.file_type().is_dir() {
-                let name = entry
-                    .file_name()
-                    .to_str()
-                    .ok_or_else(|| anyhow!("Path error!"))?;
-                let path = entry
-                    .path()
-                    .to_str()
-                    .ok_or_else(|| anyhow!("Path error!"))?;
-                result.push((name.to_owned(), path.to_owned()));
-            }
+    for entry in WalkDir::new(".")
+        .max_depth(2)
+        .min_depth(2)
+        .into_iter()
+        .flatten()
+    {
+        if entry.file_type().is_dir() {
+            let name = entry
+                .file_name()
+                .to_str()
+                .ok_or_else(|| anyhow!("Path error!"))?;
+            let path = entry
+                .path()
+                .to_str()
+                .ok_or_else(|| anyhow!("Path error!"))?;
+            result.push((name.to_owned(), path.to_owned()));
         }
     }
     let index_str = serde_json::to_string(&result)?;
