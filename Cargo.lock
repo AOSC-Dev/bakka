@@ -3,19 +3,6 @@
 version = 3
 
 [[package]]
-name = "abbsjump"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "clap",
- "dialoguer",
- "serde",
- "serde_json",
- "strsim",
- "walkdir",
-]
-
-[[package]]
 name = "anyhow"
 version = "1.0.53"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -37,6 +24,19 @@ name = "autocfg"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cdb031dd78e28731d87d56cc8ffef4a8f36ca26c38fe2de700543e627f8a464a"
+
+[[package]]
+name = "bakka"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "clap",
+ "dialoguer",
+ "serde",
+ "serde_json",
+ "strsim",
+ "walkdir",
+]
 
 [[package]]
 name = "bitflags"
