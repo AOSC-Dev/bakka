@@ -31,13 +31,14 @@ fn main() {
         eprintln!("env ABBS_TREE is not to set!\nTry to run `export ABBS_TREE=\"/path/to/tree\"` in your shell!");
         std::process::exit(1);
     }
-    let index = index::read_index(Path::new(&abbs_tree_path)).unwrap();
+    let abbs_tree_path = Path::new(&abbs_tree_path);
+    let index = index::read_index(abbs_tree_path).unwrap();
     let args = Args::parse();
     match args.subcommand {
         Command::Cd(CdSubCommand { package }) => {
             println!(
                 "{}",
-                Path::new(&abbs_tree_path)
+                abbs_tree_path
                     .join(get_package_directory(index, package))
                     .display()
             );
@@ -47,17 +48,20 @@ fn main() {
 
 fn get_package_directory(index: Vec<(String, String)>, package: String) -> String {
     let mut sorted_correlation_list = Vec::new();
-    for (name, path) in index {
+    for (index, (name, path)) in index.into_iter().enumerate() {
         let correlation = strsim::jaro_winkler(&name, &package);
         if correlation > 0.0 {
             sorted_correlation_list.push((name, path, correlation));
         }
+        if index == 10 {
+            break;
+        }
     }
     sorted_correlation_list.sort_by(|(_, _, a), (_, _, b)| b.partial_cmp(a).unwrap());
-    let mut correlation_name_list = Vec::new();
-    for i in 0..10 {
-        correlation_name_list.push(sorted_correlation_list[i].0.to_owned());
-    }
+    let correlation_name_list = sorted_correlation_list
+        .iter()
+        .map(|x| x.0.to_owned())
+        .collect::<Vec<_>>();
     let selected_package_index: usize = if correlation_name_list.len() == 1 {
         0
     } else {
