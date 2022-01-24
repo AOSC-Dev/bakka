@@ -1,11 +1,9 @@
 #!/bin/bash
 
 function abbsjump {
-    A=$1
-    B=$2
-    if [[ $A == "cd" && $B != "--help" && $B != "-h" ]]; then
-    	cd "$(/home/saki/abbsjump/target/debug/abbsjump cd ${B})"
+    if [[ $1 == "cd" && $2 != "--help" && $2 != "-h" ]]; then
+    	cd "$(abbsjump cd ${2})"
     else
-        /home/saki/abbsjump/target/debug/abbsjump $@
+        abbsjump $@
     fi
 }
