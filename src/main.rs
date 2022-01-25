@@ -1,8 +1,10 @@
 use clap::{Parser, Subcommand};
 use dialoguer::{theme::ColorfulTheme, Select};
 use std::path::{Path, PathBuf};
+use view::show_tree_with_working_directory;
 
 mod index;
+mod view;
 
 #[derive(Parser, Debug)]
 #[clap(about, version, author)]
@@ -17,10 +19,17 @@ enum Command {
     Cd(CdSubCommand),
     /// Switch to thic package directory (no match mode)
     Jump(CdSubCommand),
+    View(ViewSubCommand),
 }
 
 #[derive(Parser, Debug)]
 struct CdSubCommand {
+    #[clap()]
+    package: String,
+}
+
+#[derive(Parser, Debug)]
+struct ViewSubCommand {
     #[clap()]
     package: String,
 }
@@ -30,11 +39,16 @@ fn main() {
     if let Ok(tree) = index::get_tree(&std::env::current_dir().unwrap()) {
         abbs_tree_path = tree;
     } else if let Ok(tree) = std::env::var("ABBS_TREE") {
-        abbs_tree_path = PathBuf::from(&tree)
+        abbs_tree_path = PathBuf::from(&tree);
     } else {
         eprintln!("Cannot find ABBS tree!\nTry to run `export ABBS_TREE=\"/path/to/tree\"` in your shell!");
         std::process::exit(1);
     }
+    let editor = if let Ok(editor) = std::env::var("EDITOR") {
+        editor
+    } else {
+        "nano".to_string()
+    };
     let abbs_tree_path = Path::new(&abbs_tree_path);
     let index = index::read_index(abbs_tree_path).unwrap();
     let args = Args::parse();
@@ -59,6 +73,10 @@ fn main() {
                     std::process::exit(1);
                 }
             }
+        }
+        Command::View(ViewSubCommand { package }) => {
+            let path = abbs_tree_path.join(get_package_directory(index, package));
+            show_tree_with_working_directory(&path, editor);
         }
     }
 }
