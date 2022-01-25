@@ -1,7 +1,6 @@
 use clap::{Parser, Subcommand};
 use dialoguer::{theme::ColorfulTheme, Select};
 use std::path::PathBuf;
-use view::show_tree_with_working_directory;
 
 mod index;
 mod view;
@@ -76,7 +75,7 @@ fn main() {
         }
         Command::View(ViewSubCommand { package }) => {
             let path = abbs_tree_path.join(get_package_directory(index, package));
-            show_tree_with_working_directory(path, editor);
+            view::view_main(path, editor);
         }
     }
 }

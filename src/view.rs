@@ -8,6 +8,7 @@ use std::path::Path;
 use std::path::PathBuf;
 use std::process::Command;
 use std::rc::Rc;
+use std::sync::mpsc::Sender;
 // External Dependencies ------------------------------------------------------
 use cursive::traits::*;
 use cursive::views::Dialog;
@@ -75,11 +76,10 @@ fn expand_tree(tree: &mut TreeView<TreeEntry>, parent_row: usize, dir: &Path) {
     }
 }
 
-pub fn show_tree_with_working_directory(directory: PathBuf, editor: String) {
+fn show_tree_with_working_directory(siv: &mut Cursive, directory: PathBuf, tx: Sender<String>) {
     let mut tree = TreeView::<TreeEntry>::new();
     let directory_selected_path = Rc::new(RefCell::new(directory.to_string_lossy().to_string()));
     let directory_selected_path_copy = Rc::clone(&directory_selected_path);
-    let directory_clone = directory.clone();
 
     tree.insert_item(
         TreeEntry {
@@ -105,31 +105,47 @@ pub fn show_tree_with_working_directory(directory: PathBuf, editor: String) {
             });
         }
     });
-    let editor = Rc::new(RefCell::new(editor));
-    let editor_clone = Rc::clone(&editor);
 
     tree.set_on_submit(move |siv: &mut Cursive, row| {
-        let editor_clone_clone = editor_clone.clone();
         let file_name = siv.call_on_name("tree", move |tree: &mut TreeView<TreeEntry>| {
             tree.borrow_item(row).unwrap().to_string()
         });
         let directory_path = directory_selected_path.take();
         let path = Path::new(&directory_path).join(file_name.unwrap());
-        let editor = editor_clone_clone.take();
-        siv.quit();
-        Command::new(&editor)
-            .arg(path.as_os_str())
-            .spawn()
-            .unwrap()
-            .wait_with_output()
+        tx.send(path.as_os_str().to_string_lossy().to_string())
             .unwrap();
-
-        show_tree_with_working_directory(directory_clone.clone(), editor);
+        siv.pop_layer();
+        siv.quit();
+        let dump = siv.dump();
+        siv.set_user_data(dump);
     });
+    let tree_dialog = Dialog::around(tree.with_name("tree").scrollable()).title("File View");
+    siv.add_layer(tree_dialog);
+}
 
-    // Setup Cursive
+pub fn view_main(directory: PathBuf, editor: String) {
     let mut siv = cursive::default();
-    siv.add_layer(Dialog::around(tree.with_name("tree").scrollable()).title("File View"));
-
+    let (tx, rx) = std::sync::mpsc::channel();
+    let directory_clone = directory.clone();
+    show_tree_with_working_directory(&mut siv, directory, tx.clone());
     siv.run();
+    loop {
+        if let Some(dump) = siv.take_user_data::<cursive::Dump>() {
+            if let Ok(path) = rx.recv() {
+                drop(siv);
+                Command::new(&editor)
+                    .arg(path)
+                    .spawn()
+                    .unwrap()
+                    .wait_with_output()
+                    .unwrap();
+                siv = cursive::default();
+                siv.restore(dump);
+                show_tree_with_working_directory(&mut siv, directory_clone.clone(), tx.clone());
+                siv.run();
+            }
+        } else {
+            break;
+        }
+    }
 }
