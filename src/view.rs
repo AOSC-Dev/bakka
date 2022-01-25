@@ -1,6 +1,5 @@
 // Crate Dependencies ---------------------------------------------------------
 use cursive;
-use cursive::CursiveExt;
 
 use std::cell::RefCell;
 // STD Dependencies -----------------------------------------------------------
@@ -80,10 +79,11 @@ fn expand_tree(tree: &mut TreeView<TreeEntry>, parent_row: usize, dir: &PathBuf)
     }
 }
 
-pub fn show_tree_with_working_directory(directory: &PathBuf, editor: String) {
+pub fn show_tree_with_working_directory(directory: PathBuf, editor: String) {
     let mut tree = TreeView::<TreeEntry>::new();
-    let directory_selected_path = Rc::new(RefCell::new(String::new()));
+    let directory_selected_path = Rc::new(RefCell::new(directory.to_string_lossy().to_string()));
     let directory_selected_path_copy = Rc::clone(&directory_selected_path);
+    let directory_clone = directory.clone();
 
     tree.insert_item(
         TreeEntry {
@@ -102,7 +102,8 @@ pub fn show_tree_with_working_directory(directory: &PathBuf, editor: String) {
         if !is_collapsed && children == 0 {
             siv.call_on_name("tree", move |tree: &mut TreeView<TreeEntry>| {
                 if let Some(dir) = tree.borrow_item(row).unwrap().dir.clone() {
-                    directory_selected_copy_copy.replace(dir.display().to_string());
+                    directory_selected_copy_copy
+                        .replace(dir.canonicalize().unwrap().display().to_string());
                     expand_tree(tree, row, &dir);
                 }
             });
@@ -118,17 +119,16 @@ pub fn show_tree_with_working_directory(directory: &PathBuf, editor: String) {
         });
         let directory_path = directory_selected_path.take();
         let path = Path::new(&directory_path).join(file_name.unwrap());
-        let dump = siv.dump();
+        let editor = editor_clone_clone.take();
         siv.quit();
-        Command::new(editor_clone_clone.take())
+        Command::new(editor.clone())
             .arg(path.as_os_str())
             .spawn()
             .unwrap()
             .wait_with_output()
             .unwrap();
 
-        siv.restore(dump);
-        siv.run();
+        show_tree_with_working_directory(directory_clone.clone(), editor);
     });
 
     // Setup Cursive

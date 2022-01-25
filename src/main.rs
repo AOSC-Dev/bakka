@@ -76,7 +76,7 @@ fn main() {
         }
         Command::View(ViewSubCommand { package }) => {
             let path = abbs_tree_path.join(get_package_directory(index, package));
-            show_tree_with_working_directory(&path, editor);
+            show_tree_with_working_directory(path, editor);
         }
     }
 }
