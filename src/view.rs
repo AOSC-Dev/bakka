@@ -129,23 +129,19 @@ pub fn view_main(directory: PathBuf, editor: String) {
     let directory_clone = directory.clone();
     show_tree_with_working_directory(&mut siv, directory, tx.clone());
     siv.run();
-    loop {
-        if let Some(dump) = siv.take_user_data::<cursive::Dump>() {
-            if let Ok(path) = rx.recv() {
-                drop(siv);
-                Command::new(&editor)
-                    .arg(path)
-                    .spawn()
-                    .unwrap()
-                    .wait_with_output()
-                    .unwrap();
-                siv = cursive::default();
-                siv.restore(dump);
-                show_tree_with_working_directory(&mut siv, directory_clone.clone(), tx.clone());
-                siv.run();
-            }
-        } else {
-            break;
+    while let Some(dump) = siv.take_user_data::<cursive::Dump>() {
+        if let Ok(path) = rx.recv() {
+            drop(siv);
+            Command::new(&editor)
+                .arg(path)
+                .spawn()
+                .unwrap()
+                .wait_with_output()
+                .unwrap();
+            siv = cursive::default();
+            siv.restore(dump);
+            show_tree_with_working_directory(&mut siv, directory_clone.clone(), tx.clone());
+            siv.run();
         }
     }
 }

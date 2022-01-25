@@ -53,7 +53,7 @@ pub fn get_tree(directory: &Path) -> Result<PathBuf> {
     let mut has_groups;
     loop {
         has_groups = Path::new(&format!("{}/groups", tree.display())).is_dir();
-        if !has_groups && tree.to_str() == Some("/") {  
+        if !has_groups && tree.to_str() == Some("/") {
             return Err(anyhow!("Cannot find ABBS tree!"));
         }
         if has_groups {
