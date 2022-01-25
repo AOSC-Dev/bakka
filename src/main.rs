@@ -1,6 +1,6 @@
 use clap::{Parser, Subcommand};
 use dialoguer::{theme::ColorfulTheme, Select};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 mod index;
 
@@ -29,6 +29,8 @@ fn main() {
     let abbs_tree_path;
     if let Ok(tree) = index::get_tree(&std::env::current_dir().unwrap()) {
         abbs_tree_path = tree;
+    } else if let Ok(tree) = std::env::var("ABBS_TREE") {
+        abbs_tree_path = PathBuf::from(&tree)
     } else {
         eprintln!("Cannot find ABBS tree!\nTry to run `export ABBS_TREE=\"/path/to/tree\"` in your shell!");
         std::process::exit(1);
