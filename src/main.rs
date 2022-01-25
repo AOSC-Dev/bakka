@@ -1,6 +1,6 @@
 use clap::{Parser, Subcommand};
 use dialoguer::{theme::ColorfulTheme, Select};
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use view::show_tree_with_working_directory;
 
 mod index;
@@ -19,6 +19,7 @@ enum Command {
     Cd(CdSubCommand),
     /// Switch to thic package directory (no match mode)
     Jump(CdSubCommand),
+    /// View and modify this package autobuld file
     View(ViewSubCommand),
 }
 
@@ -49,8 +50,7 @@ fn main() {
     } else {
         "nano".to_string()
     };
-    let abbs_tree_path = Path::new(&abbs_tree_path);
-    let index = index::read_index(abbs_tree_path).unwrap();
+    let index = index::read_index(&abbs_tree_path).unwrap();
     let args = Args::parse();
     match args.subcommand {
         Command::Cd(CdSubCommand { package }) => {
