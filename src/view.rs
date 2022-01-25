@@ -1,8 +1,5 @@
-// Crate Dependencies ---------------------------------------------------------
-use cursive;
-
-use std::cell::RefCell;
 // STD Dependencies -----------------------------------------------------------
+use std::cell::RefCell;
 use std::cmp::Ordering;
 use std::fmt;
 use std::fs;
@@ -11,7 +8,6 @@ use std::path::Path;
 use std::path::PathBuf;
 use std::process::Command;
 use std::rc::Rc;
-
 // External Dependencies ------------------------------------------------------
 use cursive::traits::*;
 use cursive::views::Dialog;
@@ -32,7 +28,7 @@ impl fmt::Display for TreeEntry {
     }
 }
 
-fn collect_entries(dir: &PathBuf, entries: &mut Vec<TreeEntry>) -> io::Result<()> {
+fn collect_entries(dir: &Path, entries: &mut Vec<TreeEntry>) -> io::Result<()> {
     if dir.is_dir() {
         for entry in fs::read_dir(dir)? {
             let entry = entry?;
@@ -60,7 +56,7 @@ fn collect_entries(dir: &PathBuf, entries: &mut Vec<TreeEntry>) -> io::Result<()
     Ok(())
 }
 
-fn expand_tree(tree: &mut TreeView<TreeEntry>, parent_row: usize, dir: &PathBuf) {
+fn expand_tree(tree: &mut TreeView<TreeEntry>, parent_row: usize, dir: &Path) {
     let mut entries = Vec::new();
     collect_entries(dir, &mut entries).ok();
 
@@ -121,7 +117,7 @@ pub fn show_tree_with_working_directory(directory: PathBuf, editor: String) {
         let path = Path::new(&directory_path).join(file_name.unwrap());
         let editor = editor_clone_clone.take();
         siv.quit();
-        Command::new(editor.clone())
+        Command::new(&editor)
             .arg(path.as_os_str())
             .spawn()
             .unwrap()
