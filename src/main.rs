@@ -27,10 +27,10 @@ struct CdSubCommand {
 
 fn main() {
     let abbs_tree_path;
-    if let Ok(tree) = std::env::var("ABBS_TREE") {
+    if let Ok(tree) = index::get_tree(&std::env::current_dir().unwrap()) {
         abbs_tree_path = tree;
     } else {
-        eprintln!("env ABBS_TREE is not to set!\nTry to run `export ABBS_TREE=\"/path/to/tree\"` in your shell!");
+        eprintln!("Cannot find ABBS tree!\nTry to run `export ABBS_TREE=\"/path/to/tree\"` in your shell!");
         std::process::exit(1);
     }
     let abbs_tree_path = Path::new(&abbs_tree_path);
