@@ -1,13 +1,10 @@
 use anyhow::{anyhow, Result};
-use std::{
-    io::Read,
-    path::{Path, PathBuf},
-};
+use std::path::{Path, PathBuf};
 use walkdir::WalkDir;
 
 const INDEX_PATH: &str = "./.index.bakka";
 
-fn gen_abbs_index(tree: &Path) -> Result<Vec<(String, String)>> {
+pub fn gen_abbs_index(tree: &Path) -> Result<Vec<(String, String)>> {
     let mut result = Vec::new();
     std::env::set_current_dir(tree)?;
     for entry in WalkDir::new(".")
@@ -32,20 +29,6 @@ fn gen_abbs_index(tree: &Path) -> Result<Vec<(String, String)>> {
     std::fs::write(INDEX_PATH, index_str)?;
 
     Ok(result)
-}
-
-pub fn read_index(tree: &Path) -> Result<Vec<(String, String)>> {
-    std::env::set_current_dir(tree)?;
-    let mut index_file;
-    match std::fs::File::open(tree.join(INDEX_PATH)) {
-        Ok(file) => index_file = file,
-        Err(_) => return gen_abbs_index(tree),
-    }
-    let mut buf = Vec::new();
-    index_file.read_to_end(&mut buf)?;
-    let index: Vec<(String, String)> = serde_json::from_slice(&buf)?;
-
-    Ok(index)
 }
 
 pub fn get_tree(directory: &Path) -> Result<PathBuf> {

@@ -2,7 +2,7 @@ use clap::{Parser, Subcommand};
 use dialoguer::{theme::ColorfulTheme, Select};
 use std::path::PathBuf;
 
-mod index;
+mod tree;
 mod view;
 
 #[derive(Parser, Debug)]
@@ -36,7 +36,7 @@ struct ViewSubCommand {
 
 fn main() {
     let abbs_tree_path;
-    if let Ok(tree) = index::get_tree(&std::env::current_dir().unwrap()) {
+    if let Ok(tree) = tree::get_tree(&std::env::current_dir().unwrap()) {
         abbs_tree_path = tree;
     } else if let Ok(tree) = std::env::var("ABBS_TREE") {
         abbs_tree_path = PathBuf::from(&tree);
@@ -49,7 +49,7 @@ fn main() {
     } else {
         "nano".to_string()
     };
-    let index = index::read_index(&abbs_tree_path).unwrap();
+    let index = tree::gen_abbs_index(&abbs_tree_path).unwrap();
     let args = Args::parse();
     match args.subcommand {
         Command::Cd(CdSubCommand { package }) => {
