@@ -3,11 +3,10 @@ use std::fs;
 use anyhow::Result;
 
 use dialoguer::{theme::ColorfulTheme, Select};
-
-use crate::tree;
+use walkdir::WalkDir;
 
 pub fn new_package(package: &str, tree: &Path, editor: &str) -> Result<()> {
-    let category = tree::get_all_category_in_tree(tree);
+    let category = get_all_category_in_tree(tree);
     let selected_index = Select::with_theme(&ColorfulTheme::default())
         .default(0)
         .with_prompt("Choose one category")
@@ -26,4 +25,19 @@ pub fn new_package(package: &str, tree: &Path, editor: &str) -> Result<()> {
     fs::copy(temp_path, category_path.join(package))?;
     
     Ok(())
+}
+
+fn get_all_category_in_tree(tree: &Path) -> Vec<String> {
+    let mut result = WalkDir::new(tree)
+        .max_depth(1)
+        .min_depth(1)
+        .into_iter()
+        .flatten()
+        .filter(|x| x.path().is_dir())
+        .map(|x| x.file_name().to_string_lossy().to_string())
+        .filter(|x| !x.starts_with('.') && x != "assets" && x != "groups")
+        .collect::<Vec<_>>();
+    result.sort();
+
+    result
 }
