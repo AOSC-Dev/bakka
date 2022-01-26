@@ -1,3 +1,4 @@
+use anyhow::{anyhow, Result};
 use clap::{Parser, Subcommand};
 use dialoguer::{theme::ColorfulTheme, Select};
 use std::path::PathBuf;
@@ -69,25 +70,26 @@ fn main() {
                     .display()
             );
         }
-        Command::Jump(CdSubCommand { package }) => {
-            let count = index.iter().position(|(x, _)| x == &package);
-            match count {
-                Some(count) => println!(
-                    "{}",
-                    abbs_tree_path.join(index[count].1.to_owned()).display()
-                ),
-                None => {
-                    eprintln!("Cannot find package: {}", package);
-                    std::process::exit(1);
-                }
+        Command::Jump(CdSubCommand { package }) => match search_package(&index, &package) {
+            Ok(count) => {
+                println!("{}", abbs_tree_path.join(&index[count].1).display());
             }
-        }
+            Err(e) => {
+                eprintln!("{}", e);
+                std::process::exit(1);
+            }
+        },
         Command::View(ViewSubCommand { package }) => {
             let path = abbs_tree_path.join(get_package_directory(index, package));
             view::view_main(path, editor);
         }
         Command::New(NewSubCommand { package }) => {
-            new::new_package(&package, &abbs_tree_path, &editor).unwrap();
+            if search_package(&index, &package).is_err() {
+                new::new_package(&package, &abbs_tree_path, &editor).unwrap();
+            } else {
+                eprintln!("Package {} is exist!", package);
+                std::process::exit(1);
+            }
         }
     }
 }
@@ -119,4 +121,13 @@ fn get_package_directory(index: Vec<(String, String)>, package: String) -> Strin
     sorted_correlation_list[selected_package_index]
         .1
         .to_string()
+}
+
+pub fn search_package(index: &Vec<(String, String)>, package: &str) -> Result<usize> {
+    let count = index
+        .iter()
+        .position(|(x, _)| x == &package)
+        .ok_or_else(|| anyhow!("Cannot find package: {}", package))?;
+
+    Ok(count)
 }
