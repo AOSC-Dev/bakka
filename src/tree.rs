@@ -2,8 +2,6 @@ use anyhow::{anyhow, Result};
 use std::path::{Path, PathBuf};
 use walkdir::WalkDir;
 
-const INDEX_PATH: &str = "./.index.bakka";
-
 pub fn gen_abbs_index(tree: &Path) -> Result<Vec<(String, String)>> {
     let mut result = Vec::new();
     std::env::set_current_dir(tree)?;
@@ -25,8 +23,6 @@ pub fn gen_abbs_index(tree: &Path) -> Result<Vec<(String, String)>> {
             result.push((name.to_owned(), path.to_owned()));
         }
     }
-    let index_str = serde_json::to_string(&result)?;
-    std::fs::write(INDEX_PATH, index_str)?;
 
     Ok(result)
 }
