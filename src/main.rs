@@ -2,6 +2,7 @@ use clap::{Parser, Subcommand};
 use dialoguer::{theme::ColorfulTheme, Select};
 use std::path::PathBuf;
 
+mod new;
 mod tree;
 mod view;
 
@@ -20,6 +21,8 @@ enum Command {
     Jump(CdSubCommand),
     /// View and modify this package autobuld file
     View(ViewSubCommand),
+    /// Create new package
+    New(NewSubCommand),
 }
 
 #[derive(Parser, Debug)]
@@ -30,6 +33,12 @@ struct CdSubCommand {
 
 #[derive(Parser, Debug)]
 struct ViewSubCommand {
+    #[clap()]
+    package: String,
+}
+
+#[derive(Parser, Debug)]
+struct NewSubCommand {
     #[clap()]
     package: String,
 }
@@ -76,6 +85,9 @@ fn main() {
         Command::View(ViewSubCommand { package }) => {
             let path = abbs_tree_path.join(get_package_directory(index, package));
             view::view_main(path, editor);
+        }
+        Command::New(NewSubCommand { package }) => {
+            new::new_package(&package, &abbs_tree_path, &editor).unwrap();
         }
     }
 }

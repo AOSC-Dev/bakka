@@ -46,6 +46,7 @@ dependencies = [
  "cursive_tree_view",
  "dialoguer",
  "strsim",
+ "tempfile",
  "walkdir",
 ]
 

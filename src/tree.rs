@@ -41,3 +41,18 @@ pub fn get_tree(directory: &Path) -> Result<PathBuf> {
         tree.pop();
     }
 }
+
+pub fn get_all_category_in_tree(tree: &Path) -> Vec<String> {
+    let mut result = WalkDir::new(tree)
+        .max_depth(1)
+        .min_depth(1)
+        .into_iter()
+        .flatten()
+        .filter(|x| x.path().is_dir())
+        .map(|x| x.file_name().to_string_lossy().to_string())
+        .filter(|x| !x.starts_with(".") && x != "assets" && x != "groups")
+        .collect::<Vec<_>>();
+    result.sort();
+
+    result
+}
