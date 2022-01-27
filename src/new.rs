@@ -35,6 +35,7 @@ pub fn new_package(package: &str, tree: &Path, editor: &str) -> Result<()> {
     bye_bakka_comment(&temp_defines_path)?;
     let category_path = tree.join(&category[selected_index]);
     copy_dir_all(temp_path, category_path.join(package))?;
+    println!("All Done! {} package directory in {}!\nTry to use `bakka jump {}` to open it! or use `bakka view {}` to view directory!", package, category_path.join(package).display(), package, package);
 
     Ok(())
 }
