@@ -31,7 +31,7 @@ pub fn new_package(package: &str, tree: &Path, editor: &str) -> Result<()> {
         .wait()?;
     let category_path = tree.join(&category[selected_index]);
     fs::create_dir_all(&category_path)?;
-    fs::copy(temp_path, category_path.join(package))?;
+    copy_dir_all(temp_path, category_path.join(package))?;
 
     Ok(())
 }
@@ -49,4 +49,18 @@ fn get_all_category_in_tree(tree: &Path) -> Vec<String> {
     result.sort();
 
     result
+}
+
+fn copy_dir_all(src: impl AsRef<Path>, dst: impl AsRef<Path>) -> Result<()> {
+    fs::create_dir_all(&dst)?;
+    for entry in fs::read_dir(src)? {
+        let entry = entry?;
+        let ty = entry.file_type()?;
+        if ty.is_dir() {
+            copy_dir_all(entry.path(), dst.as_ref().join(entry.file_name()))?;
+        } else {
+            fs::copy(entry.path(), dst.as_ref().join(entry.file_name()))?;
+        }
+    }
+    Ok(())
 }
