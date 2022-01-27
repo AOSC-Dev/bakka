@@ -6,6 +6,7 @@ use std::path::PathBuf;
 mod new;
 mod tree;
 mod view;
+mod parser;
 
 #[derive(Parser, Debug)]
 #[clap(about, version, author)]
