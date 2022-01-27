@@ -20,8 +20,10 @@ pub fn new_package(package: &str, tree: &Path, editor: &str) -> Result<()> {
     let temp_defines_path = temp_autobuild_path.join("defines");
     let temp_spec = temp_path.join("spec");
     fs::create_dir_all(temp_autobuild_path)?;
+    fs::File::create(&temp_spec)?;
     fs::write(&temp_spec, BUNDLE_SPEC)?;
     Command::new(editor).arg(temp_spec).spawn()?.wait()?;
+    fs::File::create(&temp_defines_path)?;
     fs::write(&temp_defines_path, BUNDLE_DEFINES)?;
     Command::new(editor)
         .arg(temp_defines_path)
