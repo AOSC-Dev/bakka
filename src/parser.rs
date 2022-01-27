@@ -50,6 +50,11 @@ pub fn flatten_autobuild_file(input: Vec<&[u8]>) -> Vec<u8> {
 
 #[test]
 fn test_parser() {
-   let result = handle_autobuild_file(b"aaa\n# bakka: bbb\nccc\n").unwrap().1;
-   assert_eq!(std::str::from_utf8(&flatten_autobuild_file(result)).unwrap(), "aaa\nccc\n");
+    let result = handle_autobuild_file(b"aaa\n# bakka: bbb\nccc\n")
+        .unwrap()
+        .1;
+    assert_eq!(
+        std::str::from_utf8(&flatten_autobuild_file(result)).unwrap(),
+        "aaa\nccc\n"
+    );
 }

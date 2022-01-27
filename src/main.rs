@@ -4,9 +4,9 @@ use dialoguer::{theme::ColorfulTheme, Select};
 use std::path::PathBuf;
 
 mod new;
+mod parser;
 mod tree;
 mod view;
-mod parser;
 
 #[derive(Parser, Debug)]
 #[clap(about, version, author)]
