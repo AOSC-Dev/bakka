@@ -1,0 +1,39 @@
+# bakka: Welcome to the defines file! 
+# bakka: defines is the core configurations file used by Autobuild3 to read building definitions (obviously) such as package name, version, category/section, dependencies, descriptions, etc. 
+# bakka: defines is meant to be a powerful configuration file, and hence supports an extensive amount of control variables. 
+# bakka: And they will be described below (essential variables are marked with an asterisk, “*” at the end of their descriptions).
+
+# bakka: Write your package name here after the PKGNAME= variable.
+# bakka: Please refer to our AOSC OS Packaging Styling Manual, 2.2 for details
+# bakka: on how we expect the package name to look like.
+# bakka:
+# bakka: https://wiki.aosc.io/developer/packaging/package-styling-manual/#package-names
+PKGNAME=
+
+# bakka: Write your package descriptions here after the PKGDES= variable.
+# bakka: Please refer to our AOSC OS Packaging Styling Manual, 2.3 for details
+# bakka: on how we expect the package descriptions to look like.
+# bakka:
+# bakka: https://wiki.aosc.io/developer/packaging/package-styling-manual/#descriptions
+PKGDES=
+
+# bakka: Write your package run-time dependencies here after the PKGDEP= variable.
+# bakka: Please refer to our AOSC OS Packaging Styling Manual, 4.1 for details
+# bakka: on how we expect the package run-time dependencies to look like.
+# bakka:
+# bakka: https://wiki.aosc.io/developer/packaging/package-styling-manual/#run-time-dependencies
+PKGDEP=
+
+# bakka: Write your package build-time dependencies here after the BUILDDEP= variable.
+# bakka: Please refer to our AOSC OS Packaging Styling Manual, 4.2 for details
+# bakka: on how we expect the package build-time dependencies to look like.
+# bakka:
+# bakka: https://wiki.aosc.io/developer/packaging/package-styling-manual/#build-time-dependencies
+BUILDDEP=
+
+# bakka: Write your package section here after the PKGSEC= variable.
+# bakka: Please refer to our AOSC OS Packaging Styling Manual, 4.2 for details
+# bakka: on how we expect the package build-time dependencies to look like.
+# bakka:
+# bakka: https://wiki.aosc.io/developer/packaging/package-styling-manual/#build-time-dependencies
+PKGSEC=

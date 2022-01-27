@@ -1,0 +1,24 @@
+# bakka: Welcome to the spec file! This is where we define the basic versioning
+# bakka: and source code information for AOSC OS packages.
+
+# bakka: Write your package version here after the VER= variable.
+# bakka: Please refer to our AOSC OS Packaging Styling Manual, 3.1 for details
+# bakka: on how we expect the versino numbers to look like.
+# bakka:
+# bakka: https://wiki.aosc.io/developer/packaging/package-styling-manual/#versioning-variables
+VER=
+
+# bakka: Write your source code information here.
+# bakka: Please refer to the ACBS documentation on the SRCS= variable for
+# bakka: details on how to define source(s) for your AOSC OS package:
+# bakka:
+# bakka: https://wiki.aosc.io/developer/packaging/acbs/spec-format/
+SRCS=
+
+# bakka: Finally, for extra credit, please define the CHKUPDATE= variable,
+# bakka: where you may note down information for our aosc-findupdate tool to
+# bakka: automatically check for updates on AOSC OS packages in the ABBS tree.
+# bakka: Please refer to our aosc-findupdate documentation:
+# bakka:
+# bakka: https://github.com/AOSC-Dev/aosc-findupdate/blob/master/docs/config.md
+CHKUPDATE=

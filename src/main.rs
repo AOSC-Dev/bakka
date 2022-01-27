@@ -123,10 +123,10 @@ fn get_package_directory(index: Vec<(String, String)>, package: String) -> Strin
         .to_string()
 }
 
-pub fn search_package(index: &Vec<(String, String)>, package: &str) -> Result<usize> {
+pub fn search_package(index: &[(String, String)], package: &str) -> Result<usize> {
     let count = index
         .iter()
-        .position(|(x, _)| x == &package)
+        .position(|(x, _)| x == package)
         .ok_or_else(|| anyhow!("Cannot find package: {}", package))?;
 
     Ok(count)
