@@ -41,7 +41,7 @@ fn parse_autobuild_file(input: &[u8]) -> IResult<&[u8], Vec<&[u8]>> {
 
 pub fn handle_autobuild_file(input: &[u8]) -> Result<Vec<u8>> {
     let (_, output) = parse_autobuild_file(input)
-        .map_err(|e| anyhow!("Cannout handle autobuild file! why: {}", e))?;
+        .map_err(|e| anyhow!("Cannot handle autobuild file! why: {}", e))?;
     let mut buf = Vec::new();
     for i in output.into_iter() {
         buf.extend(i);
