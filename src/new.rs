@@ -47,7 +47,7 @@ Try to use `bakka jump {}` to open it! or use `bakka view {}` to view directory!
 fn editor_file(editor: &str, file_path: &Path) -> Result<()> {
     Command::new(editor).arg(file_path).spawn()?.wait()?;
 
-    Ok(loop {
+    loop {
         match question_whether_to_save_file(
             file_path
                 .file_name()
@@ -60,7 +60,9 @@ fn editor_file(editor: &str, file_path: &Path) -> Result<()> {
                 Command::new(editor).arg(file_path).spawn()?.wait()?;
             }
         }
-    })
+    }
+
+    Ok(())
 }
 
 fn bye_bakka_comment(path: &Path) -> Result<()> {
