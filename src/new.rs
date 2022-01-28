@@ -5,7 +5,7 @@ use std::io::Read;
 use std::{path::Path, process::Command};
 use walkdir::WalkDir;
 
-use crate::parser::{self, handle_autobuild_file};
+use crate::parser;
 
 const BUNDLE_SPEC: &[u8] = include_bytes!("../res/spec");
 const BUNDLE_DEFINES: &[u8] = include_bytes!("../res/defines");
@@ -46,7 +46,6 @@ Try to use `bakka jump {}` to open it! or use `bakka view {}` to view directory!
 
 fn editor_file(editor: &str, file_path: &Path) -> Result<()> {
     Command::new(editor).arg(file_path).spawn()?.wait()?;
-
     loop {
         match question_whether_to_save_file(
             file_path
@@ -74,13 +73,8 @@ fn bye_bakka_comment(path: &Path) -> Result<()> {
             buf.push(b'\n');
         }
     }
-    let parse_ab = handle_autobuild_file(&buf)
-        .map_err(|e| anyhow!("Could not handle autobuild file! Why: {}", e))?;
-    let flatten_ab = parser::flatten_autobuild_file(parse_ab.1)
-        .into_iter()
-        .map(|x| x.to_owned())
-        .collect::<Vec<_>>();
-    fs::write(path, flatten_ab)?;
+    let parse_ab = parser::handle_autobuild_file(&buf)?;
+    fs::write(path, parse_ab)?;
 
     Ok(())
 }

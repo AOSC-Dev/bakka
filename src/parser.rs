@@ -1,3 +1,4 @@
+use anyhow::{anyhow, Result};
 use nom::{
     branch::alt,
     bytes::complete::{tag, take_until},
@@ -34,27 +35,27 @@ fn single_line(input: &[u8]) -> IResult<&[u8], &[u8]> {
 }
 
 #[inline]
-pub fn handle_autobuild_file(input: &[u8]) -> IResult<&[u8], Vec<&[u8]>> {
+fn parse_autobuild_file(input: &[u8]) -> IResult<&[u8], Vec<&[u8]>> {
     many0(preceded(hr, single_line))(input)
 }
 
-pub fn flatten_autobuild_file(input: Vec<&[u8]>) -> Vec<u8> {
+pub fn handle_autobuild_file(input: &[u8]) -> Result<Vec<u8>> {
+    let (_, output) = parse_autobuild_file(input)
+        .map_err(|e| anyhow!("Cannout handle autobuild file! why: {}", e))?;
     let mut buf = Vec::new();
-    for i in input.into_iter() {
+    for i in output.into_iter() {
         buf.extend(i);
         buf.push(b'\n');
     }
 
-    buf
+    Ok(buf)
 }
 
 #[test]
 fn test_parser() {
-    let result = handle_autobuild_file(b"aaa\n# bakka: bbb\nccc\n")
-        .unwrap()
-        .1;
+    let input = b"aaa\n# bakka: bbb\nccc\n";
     assert_eq!(
-        std::str::from_utf8(&flatten_autobuild_file(result)).unwrap(),
+        std::str::from_utf8(&handle_autobuild_file(input).unwrap()).unwrap(),
         "aaa\nccc\n"
     );
 }
