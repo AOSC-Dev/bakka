@@ -1,5 +1,5 @@
 use anyhow::{anyhow, Result};
-use dialoguer::{theme::ColorfulTheme, Select};
+use dialoguer::{theme::ColorfulTheme, Confirm, Select};
 use std::fs;
 use std::io::Read;
 use std::{path::Path, process::Command};
@@ -25,19 +25,16 @@ pub fn new_package(package: &str, tree: &Path, editor: &str) -> Result<()> {
     fs::File::create(&temp_spec)?;
     fs::File::create(&temp_defines_path)?;
     fs::write(&temp_spec, BUNDLE_SPEC)?;
-    Command::new(editor).arg(&temp_spec).spawn()?.wait()?;
+    editor_file(editor, &temp_spec)?;
     bye_bakka_comment(&temp_spec)?;
     fs::write(&temp_defines_path, BUNDLE_DEFINES)?;
-    Command::new(editor)
-        .arg(&temp_defines_path)
-        .spawn()?
-        .wait()?;
+    editor_file(editor, &temp_defines_path)?;
     bye_bakka_comment(&temp_defines_path)?;
     let category_path = tree.join(&category[selected_index]);
     copy_dir_all(temp_path, category_path.join(package))?;
     println!(
         r#"All Done! {} package directory in {}!
-    Try to use `bakka jump {}` to open it! or use `bakka view {}` to view directory!"#,
+Try to use `bakka jump {}` to open it! or use `bakka view {}` to view directory!"#,
         package,
         category_path.join(package).display(),
         package,
@@ -45,6 +42,25 @@ pub fn new_package(package: &str, tree: &Path, editor: &str) -> Result<()> {
     );
 
     Ok(())
+}
+
+fn editor_file(editor: &str, file_path: &Path) -> Result<()> {
+    Command::new(editor).arg(file_path).spawn()?.wait()?;
+
+    Ok(loop {
+        match question_whether_to_save_file(
+            file_path
+                .file_name()
+                .ok_or_else(|| anyhow!("Could not get file name!"))?
+                .to_str()
+                .ok_or_else(|| anyhow!("Could not file name to str!"))?,
+        ) {
+            true => break,
+            false => {
+                Command::new(editor).arg(file_path).spawn()?.wait()?;
+            }
+        }
+    })
 }
 
 fn bye_bakka_comment(path: &Path) -> Result<()> {
@@ -96,4 +112,15 @@ fn copy_dir_all(src: impl AsRef<Path>, dst: impl AsRef<Path>) -> Result<()> {
     }
 
     Ok(())
+}
+
+fn question_whether_to_save_file(filename: &str) -> bool {
+    Confirm::with_theme(&ColorfulTheme::default())
+        .with_prompt(format!(
+            "Do you apply the {} file you just edited?",
+            filename
+        ))
+        .default(true)
+        .interact()
+        .unwrap()
 }

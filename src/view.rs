@@ -54,6 +54,7 @@ fn collect_entries(dir: &Path, entries: &mut Vec<TreeEntry>) -> io::Result<()> {
             }
         }
     }
+
     Ok(())
 }
 
