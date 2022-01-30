@@ -44,7 +44,7 @@ pub fn get_tree(directory: &Path) -> Result<PathBuf> {
     }
 }
 
-pub fn get_package_directory(index: Vec<(String, String)>, package: String) -> String {
+pub fn select_package_to_directory(index: Vec<(String, String)>, package: &str) -> String {
     let mut sorted_correlation_list = Vec::new();
     for (name, path) in index {
         let correlation = strsim::jaro_winkler(&name, &package);
@@ -73,11 +73,15 @@ pub fn get_package_directory(index: Vec<(String, String)>, package: String) -> S
         .to_string()
 }
 
-pub fn search_package(index: &[(String, String)], package: &str) -> Result<usize> {
+pub fn get_package_path(
+    index: Vec<(String, String)>,
+    package: &str,
+    abbs_tree_path: &Path,
+) -> Result<PathBuf> {
     let count = index
         .iter()
         .position(|(x, _)| x == package)
         .ok_or_else(|| anyhow!("Cannot find package: {}", package))?;
 
-    Ok(count)
+    Ok(abbs_tree_path.join(&index[count].1))
 }

@@ -23,6 +23,8 @@ enum Command {
     View(ViewSubCommand),
     /// Create new package
     New(NewSubCommand),
+    /// Get package path
+    GetPath(GetPathSubCommand),
 }
 
 #[derive(Parser, Debug)]
@@ -39,6 +41,12 @@ struct ViewSubCommand {
 
 #[derive(Parser, Debug)]
 struct NewSubCommand {
+    #[clap()]
+    package: String,
+}
+
+#[derive(Parser, Debug)]
+struct GetPathSubCommand {
     #[clap()]
     package: String,
 }
@@ -65,25 +73,25 @@ fn main() {
             println!(
                 "{}",
                 abbs_tree_path
-                    .join(tree::get_package_directory(index, package))
+                    .join(tree::select_package_to_directory(index, &package))
                     .display()
             );
         }
-        Command::Jump(CdSubCommand { package }) => match tree::search_package(&index, &package) {
-            Ok(count) => {
-                println!("{}", abbs_tree_path.join(&index[count].1).display());
-            }
-            Err(e) => {
-                eprintln!("{}", e);
-                std::process::exit(1);
-            }
-        },
+        Command::Jump(CdSubCommand { package })
+        | Command::GetPath(GetPathSubCommand { package }) => {
+            println!(
+                "{}",
+                abbs_tree_path
+                    .join(tree::get_package_path(index, &package, &abbs_tree_path).unwrap())
+                    .display()
+            );
+        }
         Command::View(ViewSubCommand { package }) => {
-            let path = abbs_tree_path.join(tree::get_package_directory(index, package));
+            let path = abbs_tree_path.join(tree::select_package_to_directory(index, &package));
             view::view_main(path, editor);
         }
         Command::New(NewSubCommand { package }) => {
-            if tree::search_package(&index, &package).is_err() {
+            if tree::get_package_path(index, &package, &abbs_tree_path).is_err() {
                 new::new_package(&package, &abbs_tree_path, &editor).unwrap();
             } else {
                 eprintln!("Package {} is exist!", package);
@@ -92,4 +100,3 @@ fn main() {
         }
     }
 }
-
