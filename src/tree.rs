@@ -1,11 +1,12 @@
 use anyhow::{anyhow, Result};
-use dialoguer::{Select, theme::ColorfulTheme};
+use dialoguer::{theme::ColorfulTheme, Select};
 use std::path::{Path, PathBuf};
 use walkdir::WalkDir;
 
 pub fn gen_abbs_index(tree: &Path) -> Result<Vec<(String, String)>> {
     let mut result = Vec::new();
-    std::env::set_current_dir(tree)?;
+    std::env::set_current_dir(tree)
+        .map_err(|e| anyhow!("Cannot switch to tree directory! why: {}", e))?;
     for entry in WalkDir::new(".")
         .max_depth(2)
         .min_depth(2)
