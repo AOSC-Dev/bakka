@@ -1,5 +1,5 @@
 use clap::{Parser, Subcommand};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 mod new;
 mod parser;
@@ -25,6 +25,8 @@ enum Command {
     New(NewSubCommand),
     /// Get package path
     GetPath(GetPathSubCommand),
+    /// Add patch to package
+    AddPatch(AddPatchSubCommand),
 }
 
 #[derive(Parser, Debug)]
@@ -48,6 +50,13 @@ struct NewSubCommand {
 #[derive(Parser, Debug)]
 struct GetPathSubCommand {
     #[clap()]
+    package: String,
+}
+
+#[derive(Parser, Debug)]
+struct AddPatchSubCommand {
+    #[clap()]
+    patch_file_path: String,
     package: String,
 }
 
@@ -97,6 +106,18 @@ fn main() {
                 eprintln!("Package {} is exist!", package);
                 std::process::exit(1);
             }
+        }
+        Command::AddPatch(AddPatchSubCommand {
+            patch_file_path,
+            package,
+        }) => {
+            tree::add_patch(
+                &package,
+                index,
+                &abbs_tree_path,
+                Path::new(&patch_file_path),
+            )
+            .unwrap();
         }
     }
 }

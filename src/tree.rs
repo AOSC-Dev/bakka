@@ -17,11 +17,11 @@ pub fn gen_abbs_index(tree: &Path) -> Result<Vec<(String, String)>> {
             let name = entry
                 .file_name()
                 .to_str()
-                .ok_or_else(|| anyhow!("Path error!"))?;
+                .ok_or_else(|| anyhow!("Cannot convert OsStr to str!"))?;
             let path = entry
                 .path()
                 .to_str()
-                .ok_or_else(|| anyhow!("Path error!"))?;
+                .ok_or_else(|| anyhow!("Cannot convert OsStr to str!"))?;
             result.push((name.to_owned(), path.to_owned()));
         }
     }
@@ -47,7 +47,7 @@ pub fn get_tree(directory: &Path) -> Result<PathBuf> {
 pub fn select_package_to_directory(index: Vec<(String, String)>, package: &str) -> String {
     let mut sorted_correlation_list = Vec::new();
     for (name, path) in index {
-        let correlation = strsim::jaro_winkler(&name, &package);
+        let correlation = strsim::jaro_winkler(&name, package);
         if correlation > 0.0 {
             sorted_correlation_list.push((name, path, correlation));
         }
@@ -84,4 +84,22 @@ pub fn get_package_path(
         .ok_or_else(|| anyhow!("Cannot find package: {}", package))?;
 
     Ok(abbs_tree_path.join(&index[count].1))
+}
+
+pub fn add_patch(
+    package: &str,
+    index: Vec<(String, String)>,
+    abbs_tree_path: &Path,
+    patch_path: &Path,
+) -> Result<()> {
+    let package_path = get_package_path(index, package, abbs_tree_path)?;
+    let to = package_path.join("autobuild/patches");
+    if !to.exists() {
+        std::fs::create_dir_all(&to)?;
+    } else if !to.is_dir() {
+        return Err(anyhow!("Package {} patches directory not a dir!", package));
+    };
+    std::fs::copy(patch_path, to)?;
+
+    Ok(())
 }
