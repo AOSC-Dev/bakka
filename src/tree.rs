@@ -1,4 +1,5 @@
 use anyhow::{anyhow, Result};
+use dialoguer::{Select, theme::ColorfulTheme};
 use std::path::{Path, PathBuf};
 use walkdir::WalkDir;
 
@@ -40,4 +41,42 @@ pub fn get_tree(directory: &Path) -> Result<PathBuf> {
         }
         tree.pop();
     }
+}
+
+pub fn get_package_directory(index: Vec<(String, String)>, package: String) -> String {
+    let mut sorted_correlation_list = Vec::new();
+    for (name, path) in index {
+        let correlation = strsim::jaro_winkler(&name, &package);
+        if correlation > 0.0 {
+            sorted_correlation_list.push((name, path, correlation));
+        }
+    }
+    sorted_correlation_list.sort_by(|(_, _, a), (_, _, b)| b.partial_cmp(a).unwrap());
+    let mut correlation_name_list = Vec::new();
+    for (name, _, _) in sorted_correlation_list.iter().take(10) {
+        correlation_name_list.push(name);
+    }
+    let selected_package_index: usize = if correlation_name_list.len() == 1 {
+        0
+    } else {
+        Select::with_theme(&ColorfulTheme::default())
+            .default(0)
+            .with_prompt("Choose one package to switch directory")
+            .items(&correlation_name_list)
+            .interact()
+            .unwrap()
+    };
+
+    sorted_correlation_list[selected_package_index]
+        .1
+        .to_string()
+}
+
+pub fn search_package(index: &[(String, String)], package: &str) -> Result<usize> {
+    let count = index
+        .iter()
+        .position(|(x, _)| x == package)
+        .ok_or_else(|| anyhow!("Cannot find package: {}", package))?;
+
+    Ok(count)
 }

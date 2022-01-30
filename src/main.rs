@@ -1,6 +1,4 @@
-use anyhow::{anyhow, Result};
 use clap::{Parser, Subcommand};
-use dialoguer::{theme::ColorfulTheme, Select};
 use std::path::PathBuf;
 
 mod new;
@@ -67,11 +65,11 @@ fn main() {
             println!(
                 "{}",
                 abbs_tree_path
-                    .join(get_package_directory(index, package))
+                    .join(tree::get_package_directory(index, package))
                     .display()
             );
         }
-        Command::Jump(CdSubCommand { package }) => match search_package(&index, &package) {
+        Command::Jump(CdSubCommand { package }) => match tree::search_package(&index, &package) {
             Ok(count) => {
                 println!("{}", abbs_tree_path.join(&index[count].1).display());
             }
@@ -81,11 +79,11 @@ fn main() {
             }
         },
         Command::View(ViewSubCommand { package }) => {
-            let path = abbs_tree_path.join(get_package_directory(index, package));
+            let path = abbs_tree_path.join(tree::get_package_directory(index, package));
             view::view_main(path, editor);
         }
         Command::New(NewSubCommand { package }) => {
-            if search_package(&index, &package).is_err() {
+            if tree::search_package(&index, &package).is_err() {
                 new::new_package(&package, &abbs_tree_path, &editor).unwrap();
             } else {
                 eprintln!("Package {} is exist!", package);
@@ -95,40 +93,3 @@ fn main() {
     }
 }
 
-fn get_package_directory(index: Vec<(String, String)>, package: String) -> String {
-    let mut sorted_correlation_list = Vec::new();
-    for (name, path) in index {
-        let correlation = strsim::jaro_winkler(&name, &package);
-        if correlation > 0.0 {
-            sorted_correlation_list.push((name, path, correlation));
-        }
-    }
-    sorted_correlation_list.sort_by(|(_, _, a), (_, _, b)| b.partial_cmp(a).unwrap());
-    let mut correlation_name_list = Vec::new();
-    for (name, _, _) in sorted_correlation_list.iter().take(10) {
-        correlation_name_list.push(name);
-    }
-    let selected_package_index: usize = if correlation_name_list.len() == 1 {
-        0
-    } else {
-        Select::with_theme(&ColorfulTheme::default())
-            .default(0)
-            .with_prompt("Choose one package to switch directory")
-            .items(&correlation_name_list)
-            .interact()
-            .unwrap()
-    };
-
-    sorted_correlation_list[selected_package_index]
-        .1
-        .to_string()
-}
-
-pub fn search_package(index: &[(String, String)], package: &str) -> Result<usize> {
-    let count = index
-        .iter()
-        .position(|(x, _)| x == package)
-        .ok_or_else(|| anyhow!("Cannot find package: {}", package))?;
-
-    Ok(count)
-}
