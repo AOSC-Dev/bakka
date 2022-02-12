@@ -86,8 +86,14 @@ fn get_all_category_in_tree(tree: &Path) -> Vec<String> {
         .into_iter()
         .flatten()
         .filter(|x| x.path().is_dir())
-        .map(|x| x.file_name().to_string_lossy().to_string())
-        .filter(|x| !x.starts_with('.') && x != "assets" && x != "groups")
+        .map(|x| {
+            x.file_name()
+                .to_str()
+                .ok_or_else(|| anyhow!("Cannot convert filename to string!"))
+                .unwrap()
+                .to_string()
+        })
+        .filter(|x| !x.starts_with('.') && x != &"assets" && x != &"groups")
         .collect::<Vec<_>>();
     result.sort();
 
