@@ -21,7 +21,7 @@ pub fn gen_abbs_index(tree: &Path) -> Result<Vec<(String, String)>> {
             let path = entry
                 .path()
                 .to_str()
-                .ok_or_else(|| anyhow!("Cannot convert OsStr to str!"))?;
+                .ok_or_else(|| anyhow!("Cannot convert path to str!"))?;
             result.push((name.to_owned(), path.to_owned()));
         }
     }
@@ -46,6 +46,13 @@ pub fn get_tree(directory: &Path) -> Result<PathBuf> {
 
 pub fn select_package_to_directory(index: Vec<(String, String)>, package: &str) -> String {
     let mut sorted_correlation_list = Vec::new();
+    let package = if package.contains('/') {
+        let (_, package) = package.split_once('/').unwrap();
+
+        package
+    } else {
+        package
+    };
     for (name, path) in index {
         let correlation = strsim::jaro_winkler(&name, package);
         if correlation > 0.0 {
