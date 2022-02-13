@@ -27,6 +27,8 @@ enum Command {
     GetPath(GetPathSubCommand),
     /// Add patch to package
     AddPatch(AddPatchSubCommand),
+    /// init function to shell
+    Init(InitSubCommand),
 }
 
 #[derive(Parser, Debug)]
@@ -60,25 +62,24 @@ struct AddPatchSubCommand {
     package: String,
 }
 
+#[derive(Parser, Debug)]
+struct InitSubCommand {
+    #[clap()]
+    shell: String,
+}
+
+const BASH_SCRIPT: &'static str = include_str!("../shell/bakka.bash");
+
 fn main() {
-    let abbs_tree_path;
-    if let Ok(tree) = tree::get_tree(&std::env::current_dir().unwrap()) {
-        abbs_tree_path = tree;
-    } else if let Ok(tree) = std::env::var("ABBS_TREE") {
-        abbs_tree_path = PathBuf::from(&tree);
-    } else {
-        eprintln!("Cannot find ABBS tree!\nTry to run `export ABBS_TREE=\"/path/to/tree\"` in your shell!");
-        std::process::exit(1);
-    }
     let editor = if let Ok(editor) = std::env::var("EDITOR") {
         editor
     } else {
         "nano".to_string()
     };
-    let index = tree::gen_abbs_index(&abbs_tree_path).unwrap();
     let args = Args::parse();
     match args.subcommand {
         Command::Cd(CdSubCommand { package }) => {
+            let (abbs_tree_path, index) = find_abbs_tree_and_index();
             println!(
                 "{}",
                 abbs_tree_path
@@ -88,6 +89,7 @@ fn main() {
         }
         Command::Jump(CdSubCommand { package })
         | Command::GetPath(GetPathSubCommand { package }) => {
+            let (abbs_tree_path, index) = find_abbs_tree_and_index();
             println!(
                 "{}",
                 abbs_tree_path
@@ -96,10 +98,12 @@ fn main() {
             );
         }
         Command::View(ViewSubCommand { package }) => {
+            let (abbs_tree_path, index) = find_abbs_tree_and_index();
             let path = abbs_tree_path.join(tree::select_package_to_directory(index, &package));
             view::view_main(path, editor);
         }
         Command::New(NewSubCommand { package }) => {
+            let (abbs_tree_path, index) = find_abbs_tree_and_index();
             if tree::get_package_path(index, &package, &abbs_tree_path).is_err() {
                 new::new_package(&package, &abbs_tree_path, &editor).unwrap();
             } else {
@@ -111,6 +115,7 @@ fn main() {
             patch_file_path,
             package,
         }) => {
+            let (abbs_tree_path, index) = find_abbs_tree_and_index();
             tree::add_patch(
                 &package,
                 index,
@@ -119,5 +124,28 @@ fn main() {
             )
             .unwrap();
         }
+        Command::Init(InitSubCommand { shell }) => {
+            if shell == "bash" {
+                print!("{}", BASH_SCRIPT);
+            } else {
+                eprintln!("Unsupport shell: {}", shell);
+                std::process::exit(1);
+            }
+        }
     }
+}
+
+fn find_abbs_tree_and_index() -> (PathBuf, Vec<(String, String)>) {
+    let abbs_tree_path;
+    if let Ok(tree) = tree::get_tree(&std::env::current_dir().unwrap()) {
+        abbs_tree_path = tree;
+    } else if let Ok(tree) = std::env::var("ABBS_TREE") {
+        abbs_tree_path = PathBuf::from(&tree);
+    } else {
+        eprintln!("Cannot find ABBS tree!\nTry to run `export ABBS_TREE=\"/path/to/tree\"` in your shell!");
+        std::process::exit(1);
+    }
+    let index = tree::gen_abbs_index(&abbs_tree_path).unwrap();
+
+    (abbs_tree_path, index)
 }
